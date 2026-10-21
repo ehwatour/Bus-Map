@@ -1,0 +1,1186 @@
+/* ======================================
+   전체 화면
+====================================== */
+
+html, body {
+    width:100%;
+    height:100%;
+    margin:0;
+    padding:0;
+    font-family: "Malgun Gothic", Arial, sans-serif;
+    overflow:hidden;
+}
+
+
+/* ======================================
+   지도
+====================================== */
+
+#map {
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+    width:100%;
+    height:100%;
+}
+
+
+/* ======================================
+   노선 패널
+====================================== */
+
+#control-panel {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    width: max-content;
+    min-width: 300px;
+    max-width: calc(100vw - 65px);
+    max-height:90vh;
+    box-sizing:border-box;
+    background:#fff;
+    padding:15px;
+    border-radius:10px;
+    box-shadow: 0 3px 15px rgba(0,0,0,.3);
+    z-index:1000;
+    transition: left .3s ease;
+    overflow:hidden;
+}
+
+
+/* ======================================
+   ★ 패널 폭 조절 영역
+   - PC : 오른쪽 가장자리
+   - 모바일 : 오른쪽 스크롤 영역 쪽
+====================================== */
+
+#panel-resize-handle {
+    position:absolute;
+    top:0;
+    right:8px;
+    bottom:0;
+    width:16px;
+    margin:0;
+    padding:0;
+    border:0;
+    background: transparent;
+    cursor: ew-resize;
+    z-index:3000;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    pointer-events:auto;
+    opacity:0;
+}
+
+/* 마우스를 올렸을 때 너무 튀지 않게
+   실제 패널은 건드리지 않고 커서만 변경 */
+
+#panel-resize-handle:hover {
+    cursor:ew-resize;
+}
+
+
+/* ======================================
+   패널 닫힘
+====================================== */
+
+#control-panel.hidden {
+    transform: translateX(calc(-100% - 30px));
+}
+
+
+/* ======================================
+   패널 토글 버튼
+====================================== */
+
+#panel-toggle {
+    position:fixed;
+    top:20px;
+    left:20px;
+    width:42px;
+    height:42px;
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    background: #fff;
+    border: 1px solid #aaa;
+    border-radius: 8px;
+    line-height:1;
+    cursor:pointer;
+    z-index:2000;
+    font-size: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    transition: left .3s ease, background .15s ease;
+    padding: 0;
+}
+
+#panel-toggle svg {
+    display: block;
+    width: 30px;
+    height: 30px;
+    stroke: #222222;
+    transform: translateY(1px);
+}
+
+#panel-toggle:hover {
+    background:#f0f0f0;
+}
+
+
+/* ======================================
+   제목
+====================================== */
+
+#control-panel h2 {
+    margin: 0 0 10px 0;
+    padding:0;
+    font-size:18px;
+    line-height:1.4;
+}
+
+
+/* ======================================
+   상단 버튼
+====================================== */
+
+.buttons {
+    display:flex;
+    gap:8px;
+    width:100%;
+}
+
+.buttons button {
+    flex:1;
+}
+
+button {
+    box-sizing:border-box;
+    padding: 7px 10px;
+    border: 1px solid #aaa;
+    border-radius:5px;
+    background: #f5f5f5;
+    cursor:pointer;
+    font-family:inherit;
+}
+
+button:hover {
+    background:#ddd;
+}
+
+button:active {
+    background:#ccc;
+}
+
+
+/* ======================================
+   검색
+====================================== */
+
+.search-box {
+    display:flex;
+    align-items:center;
+    gap:5px;
+    width:100%;
+    margin-top:10px;
+    margin-bottom:5px;
+}
+
+#route-search {
+    flex:1;
+    min-width:0;
+    width:auto;
+    height:25px;
+    box-sizing:border-box;
+    padding: 0 8px;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    font-family:inherit;
+    font-size:13px;
+    outline:none;
+}
+
+#route-search:focus {
+    border-color:#1976d2;
+    box-shadow: 0 0 0 1px #1976d2;
+}
+
+#search-btn {
+    flex:none;
+    width:50px;
+    height:25px;
+    padding:0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    line-height:1;
+    font-size:13px;
+}
+
+
+#search-check {
+    flex:none;
+    width:16px;
+    height:16px;
+    min-width:16px;
+    min-height:16px;
+    margin:0;
+    padding:0;
+    cursor:pointer;
+    accent-color:#1976d2;
+}
+
+
+.search-check-label {
+    flex:none;
+    width:24px;
+    height:25px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin:0;
+    padding:0;
+    cursor: pointer;
+}
+
+
+/* ======================================
+   패널 스크롤
+====================================== */
+
+.panel-content {
+
+    width:100%;
+    max-height: calc(90vh - 150px);
+    overflow-y:auto;
+    overflow-x:auto;
+    box-sizing:border-box;
+    position:relative;
+
+}
+
+
+/* ======================================
+   패널 스크롤바
+====================================== */
+
+.panel-content::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 8px;
+    height: 8px;
+}
+
+.panel-content::-webkit-scrollbar-track {
+    background:#f1f1f1;
+}
+
+.panel-content::-webkit-scrollbar-thumb {
+    background:#aaa;
+    border-radius:4px;
+}
+
+.panel-content::-webkit-scrollbar-thumb:hover {
+    background:#888;
+}
+
+
+/* ======================================
+   노선 목록
+====================================== */
+
+#route-list {
+    width:max-content;
+    min-width:100%;
+    max-width:none;
+    margin-top:0;
+    box-sizing:border-box;
+    overflow:visible;
+    position:relative;
+}
+
+
+/* ======================================
+   대분류 제목
+====================================== */
+
+.group-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: max-content;
+    min-width: 100%;
+    white-space: nowrap;
+    box-sizing: border-box;
+    margin-top: 16px;
+    margin-bottom: 6px;
+    padding: 2px 2px;
+    font-weight: bold;
+    font-size: 15px;
+    line-height: 1.5;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.group-title:hover {
+    background: #f1f3f5;
+}
+
+.group-title:first-child {
+    margin-top:3px;
+}
+
+.group-arrow {
+    width:14px;
+    min-width:14px;
+    text-align:center;
+    user-select:none;
+    font-size:13px;
+    cursor:pointer;
+}
+
+.group-checkbox {
+    width:16px;
+    height:16px;
+    min-width:16px;
+    min-height:16px;
+    margin:0;
+    padding:0;
+    cursor:pointer;
+    accent-color:#1976d2;
+}
+
+
+/* ======================================
+   테이블 영역
+====================================== */
+
+.route-table-wrapper {
+    width:max-content;
+    min-width: 100%;
+    display: block;
+    max-width:none;
+    box-sizing:border-box;
+    overflow:visible;
+    margin: 0 0 12px 0;
+    border:0;
+    background:#fff;
+}
+
+
+/* ======================================
+   첫 번째 열
+====================================== */
+
+.route-name-cell {
+
+    width: var(--route-name-width, 120px);
+    min-width: var(--route-name-width, 120px);
+    box-sizing: border-box;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 6px;
+    border: 0;
+    background: #ffffff;
+    text-align: left;
+    vertical-align: middle;
+    font-size: 14px;
+    font-weight: 500;
+    color: #222222;
+    overflow: visible;
+    text-overflow: clip;
+    cursor: pointer;
+
+}
+
+.route-name-cell:hover,
+.route-name-cell:active {
+    background: #f1f1f1;
+}
+
+
+/* ======================================
+   노선 행
+====================================== */
+
+.route-row {
+    min-height:36px;
+    width: max-content;
+    min-width: 100%;
+    align-items: stretch;
+    box-sizing:border-box;
+    border-bottom: 1px solid #eeeeee;
+
+}
+
+.route-row:hover {
+    background:#fafafa;
+}
+
+.route-body {
+    display: block;
+    width: max-content;
+    min-width: 100%;
+    box-sizing: border-box;
+}
+
+
+/* ======================================
+   평일 / 주말 영역
+====================================== */
+
+.route-row > .route-day-area {
+    border-bottom:0;
+}
+
+
+/* ======================================
+   평일 / 주말 셀
+====================================== */
+
+.route-variant {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 25px;
+    height: 25px;
+    box-sizing: border-box;
+    border-radius: 3px;
+    cursor: pointer;
+    flex: none;
+    border: 2px solid transparent;
+    background-color: transparent;
+    padding: 0;
+    margin: 0;
+    transition: opacity 0.1s ease;
+}
+
+.route-variant:hover {
+    opacity: 0.85;
+    background: #eef4fc;
+}
+
+.route-tag-check-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.route-type-cell:hover {
+    background: #f1f1f1;
+}
+
+.route-name-checkbox {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    min-height: 16px;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+    accent-color: #1976d2;
+}
+
+
+/* ======================================
+   대분류 사이 여백
+====================================== */
+
+.route-table-wrapper + .group-title {
+    margin-top:15px;
+}
+
+
+/* ======================================
+   검색으로 숨겨진 행
+====================================== */
+
+.route-row[style*="display: none"] {
+    display:none;
+}
+
+
+/* ======================================
+   Leaflet 팝업
+====================================== */
+
+.leaflet-popup-content {
+    font-family:
+        "Malgun Gothic",
+        Arial,
+        sans-serif;
+    font-size:12px;
+    line-height:1.5;
+}
+
+
+/* ======================================
+   포커스
+====================================== */
+
+button:focus-visible,
+input:focus-visible {
+    outline: 2px solid #1976d2;
+    outline-offset:1px;
+}
+
+
+/* ======================================
+   평일 / 주말 + 주출 / 주퇴 / 야출 / 야퇴
+   전체 헤더 고정
+====================================== */
+
+#route-category-header {
+    background:#ffffff;
+    box-sizing:border-box;
+    width:max-content;
+    min-width:100%;
+    margin:0;
+    display: block;
+    padding: 6px 0;
+    white-space: nowrap;
+    border:0;
+    position:sticky;
+    top:0;
+    z-index:6000;
+    border-bottom: 1px solid #eeeeee;
+}
+
+#route-category-header > .category-header-inner {
+    background:#fff;
+    box-sizing:border-box;
+}
+
+#route-category-header > .category-header-inner > div {
+    background:#fff;
+    box-sizing:border-box;
+}
+
+
+/* ======================================
+   헤더 타입 행 세로선
+====================================== */
+
+.vertical-weekend-boundary-header-line {
+    position: absolute;
+    top: 0;
+    width: 1px;
+    background: #c8c8c8;
+    pointer-events: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-sizing: border-box;
+    z-index: 1;
+}
+
+    .vertical-column-header-line-layer {
+        position: absolute;
+        pointer-events: none;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        z-index: 5002;
+    }
+
+    .vertical-column-header-line {
+        position: absolute;
+        width: 1px;
+        background: #eeeeee;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        pointer-events: none;
+        box-sizing: border-box;
+    }
+
+
+/* ======================================
+   열 설정 토글 - 팝업
+====================================== */
+
+#column-toggle-wrapper {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: max-content;
+    min-width: 0;
+    max-width: none;
+    box-sizing: border-box;
+    z-index: 7000;
+    pointer-events: auto;
+}
+
+
+#column-toggle-button {
+    width: calc(var(--route-name-width, 120px) - 10px);
+    height: 30px;
+    padding: 0 7px;
+    margin-left: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-sizing: border-box;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    background: #ffffff;
+    color: #333333;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    position:relative;
+}
+
+#column-toggle-button .toggle-arrow {
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height:100%;
+    line-height:1;
+    position:relative;
+    top:-2px;
+}
+
+#column-toggle-button > span {
+    background: transparent;
+}
+
+#column-toggle-panel {
+    position:absolute;
+    display: none;
+    left:0;
+    top:34px;
+    width: max-content;
+    max-width: calc(100vw - 20px);
+    min-width: 400px;
+    box-sizing:border-box;
+    background:#ffffff;
+    opacity:1;
+    z-index:7001;
+    isolation:isolate;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    border: 2px solid #e0e0e0;
+    grid-template-columns:1fr 1fr; /* 평일 / 주말 2열 분할 */
+    column-gap: 0px;
+    overflow: visible; 
+    max-height: none;
+}
+
+
+/* ======================================
+   열 표시 팝업을 세로선보다 위로
+   ====================================== */
+
+#column-toggle-panel .column-toggle-group:first-child {
+    border-right: 1px solid #eeeeee;
+    padding-right: 20px;
+    box-sizing: border-box;
+}
+
+#column-toggle-panel .column-toggle-group:last-child {
+    padding-left: 20px;
+    box-sizing: border-box;
+}
+
+/* ======================================
+   토글 스위치 색상 강제 적용 (우선순위 역전)
+====================================== */
+
+#column-toggle-button:hover {
+    background:#f7f7f7;
+}
+
+.column-toggle-group {
+    width:100%;
+    box-sizing:border-box;
+}
+
+.column-toggle-day-title {
+    margin: 0 0 5px 0;
+    font-size:15px;
+    font-weight:700;
+}
+
+.column-toggle-checkbox {
+    width:16px;
+    height:16px;
+    margin:0;
+    flex:none;
+    cursor:pointer;
+    accent-color:#1976d2;
+}
+
+
+/* ======================================
+   스위치
+====================================== */
+
+.switch {
+    position:relative;
+    display:inline-block;
+    width:34px;
+    height:18px;
+    flex:none;
+}
+
+.switch input {
+    position:absolute;
+    width:1px;
+    height:1px;
+    opacity:0;
+    pointer-events:none;
+}
+
+.slider {
+    position:absolute;
+    inset:0;
+    background:#c8c8c8;
+    border-radius:999px;
+    cursor:pointer;
+    transition: background .15s ease;
+}
+
+.slider::before {
+    content:"";
+    position:absolute;
+    width:14px;
+    height:14px;
+    left:2px;
+    top:2px;
+    border-radius:50%;
+    background:#fff;
+    box-shadow: 0 1px 2px rgba(0,0,0,.2);
+    transition: transform .15s ease;
+}
+
+.switch input:checked + .slider {
+    background:#1976d2;
+}
+
+.switch input:checked +
+.slider::before {
+    transform: translateX(16px);
+}
+
+
+/* ======================================
+   체크박스 공통 스타일 (크기 및 accent-color 통일)
+====================================== */
+
+input[type="checkbox"] {
+    accent-color: #1976d2;
+    cursor: pointer;
+}
+
+input[type="checkbox"]:indeterminate {
+    accent-color: #1976d2;
+}
+
+
+/* ======================================
+   노선 분류 및 터치 영역 개선
+====================================== */
+
+#route-list::-webkit-scrollbar {
+    height: 0px;
+}
+    .vertical-column-line-layer {
+        position: absolute;
+        pointer-events: none;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        z-index: 5001;
+    }
+
+    .vertical-column-line {
+        position: absolute;
+        width: 1px;
+        background: #eeeeee;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        pointer-events: none;
+        box-sizing: border-box;
+    }
+
+.route-category-checkbox {
+    flex: none;
+    display: none;
+    width: 14px;
+    height: 14px;
+    min-width: 14px;
+    min-height: 14px;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+}
+
+
+/*================================================
+   상단 고정 헤더 (#route-category-header)
+   ============================================== */
+
+.category-header-inner {
+    position: relative;
+    display: grid;
+    width: max-content;
+    min-width: 100%;
+    box-sizing: border-box;
+    align-items: stretch;
+}
+
+/* 요일 제목과 메인 스위치가 있는 상단 헤더 행 */
+.column-toggle-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+.column-toggle-header-row .column-toggle-day-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #000000;
+}
+
+/* 캡슐 버튼 그리드 (2열 배열) */
+.column-toggle-pills-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    justify-content: center;
+}
+
+/* 캡슐 래퍼 */
+.column-toggle-pill {
+    display: inline-flex;
+    cursor: pointer;
+    margin: 0;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* 실제 체크박스는 숨김 */
+.column-toggle-pill-input {
+    display: none;
+}
+
+/* 캡슐 버튼 기본 스타일 (OFF 상태) */
+.column-toggle-pill-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    width: 100%;
+    min-width: 75px;
+    padding: 8px 12px;
+    border-radius: 20px;
+    border: 1.8px solid #e0e0e0;
+    background: #f8f9fa;
+    color: #000000;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+/* 🔵 체크(ON) 상태: 배경 연한 파란색, 테두리는 파란색, 글씨는 검은색 고정 */
+.column-toggle-pill-input:checked + .column-toggle-pill-content {
+    background-color: #dbeafe;
+    border-color: #3b82f6;
+    color: #000000;
+}
+/* 공통 아이콘 영역 */
+.pill-icon {
+    position: relative;
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-right: 2px;
+}
+
+/* OFF 상태 아이콘 (CSS 테두리로 빈 사각형 그리기) */
+.column-toggle-pill-input:not(:checked) + .column-toggle-pill-content .pill-icon::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    inset: 0;
+    width: 12px;
+    height: 12px;
+    box-sizing: border-box;
+    border: 1.5px solid #aaaaaa;
+    border-radius: 2.5px;
+}
+
+/* ON 상태 아이콘 (얇고 넓게 퍼진 V 형태) */
+.column-toggle-pill-input:checked + .column-toggle-pill-content .pill-icon {
+    border: none;
+}
+.column-toggle-pill-input:checked + .column-toggle-pill-content .pill-icon::after {
+    content: "";
+    position: absolute;
+    left: 3px; 
+    top: 2px;  
+    width: 10px;
+    height: 5px;
+    border: solid #000000;
+    border-width: 0 0 1.8px 1.8px; 
+    transform: rotate(-45deg);
+}
+
+
+/* 대시(indeterminate) 상태일 때 기본 브라우저 스타일 대신 흰 박스 + 검은색 대시 적용 */
+.route-name-checkbox:indeterminate,
+.group-checkbox:indeterminate,
+#search-check:indeterminate {
+    appearance: none;
+    -webkit-appearance: none;
+    border: 1.5px solid #555555;
+    border-radius: 3px;
+    background-color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-sizing: border-box;
+}
+
+/* 박스 한가운데에 검은색 가로선(dash) 생성 */
+.route-name-checkbox:indeterminate::after,
+.group-checkbox:indeterminate::after,
+#search-check:indeterminate::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 8px;
+    height: 2px;
+    background-color: #000000;
+    transform: translate(-50%, -50%);
+    border-radius: 1px;
+}
+
+
+/* ======================================
+   모바일
+====================================== */
+
+@media(max-width:600px) {
+
+    #column-toggle-button {
+        height:32px;
+        padding:0 7px;
+        font-size:12px;
+    }
+
+    #column-toggle-panel {
+        width: fit-content;
+        min-width: unset;
+        max-width: calc(100vw - 20px);
+        grid-template-columns: 1fr;
+        padding: 10px 12px;
+    }
+
+    .column-toggle-day-title {
+        font-size:11px;
+    }
+
+    .column-toggle-checkbox {
+        width:15px;
+        height:15px;
+    }
+
+    .column-toggle-pills-grid {
+        gap:4px;
+    }
+
+    #control-panel {
+        top: 10px;
+        left: 10px;
+        width: auto;
+        min-width:240px;
+        max-width: calc(100vw - 65px);
+        max-height:70vh;
+        padding:8px;
+    }
+
+    #control-panel.hidden {
+        transform: translateX(calc(-100% - 30px));
+    }
+
+    #control-panel h2 {
+        font-size:17px;
+        margin-bottom:7px;
+    }
+
+    .panel-content {
+        max-height: calc(70vh - 140px)
+    }
+
+    .group-title {
+        margin-top:12px;
+        margin-bottom:5px;
+        font-size:12px;
+    }
+
+    .group-arrow {
+        font-size:11px;
+    }
+
+    .group-checkbox {
+        width:15px;
+        height:15px;
+        min-width:15px;
+        min-height:15px;
+    }
+
+    .switch {
+        width:28px;
+        height:15px;
+    }
+
+    .slider::before {
+        width:11px;
+        height:11px;
+    }
+
+#panel-resize-handle {
+    right:-5px;
+    width:18px;
+    top:0;
+    bottom:0;
+}
+
+    #panel-toggle {
+        top:10px;
+        left:10px;
+        width:40px;
+        height:40px;
+        font-size:22px;
+    }
+
+    .route-name-checkbox {
+        width:14px;
+        height:14px;
+    }
+
+    .route-name-cell {
+        width:var(--route-name-width, 110px);
+        min-width:var(--route-name-width, 110px);
+        white-space:nowrap;
+        font-size:13px;
+        padding: 5px 5px;
+    }
+
+    .route-row {
+        min-height:34px;
+        border-bottom: 1px solid #eeeeee;
+    }
+
+    .route-category-checkbox {
+        width:13px;
+        height:13px;
+    }
+
+    .route-variant span:last-child {
+        font-size:12px;
+        line-height:1.4;
+        white-space:nowrap;
+    }
+
+    #column-toggle-button .toggle-arrow {
+        top: 0;
+    }
+
+    #column-toggle-panel .column-toggle-group:first-child {
+        border-right: none;
+        border-bottom: 1px solid #eeeeee;
+        padding-right: 0;
+        padding-bottom: 8px;
+        margin-bottom: 8px;
+    }
+
+    #column-toggle-panel .column-toggle-group:last-child {
+        padding-left: 0;
+    }
+
+    /* 요일 제목 + 스위치 헤더 행 */
+    .column-toggle-header-row {
+        margin-bottom: 6px;
+    }
+
+    .column-toggle-header-row .column-toggle-day-title {
+        font-size: 14px;
+    }
+
+/* 캡슐 버튼: 글자가 한 줄로 유지되도록 처리 */
+    .column-toggle-pill-content {
+        padding: 4px 4px;
+        font-size: 12px;
+        letter-spacing: -0.5px;
+        border-radius: 12px;
+        height: 25px;
+        box-sizing: border-box;
+        white-space: nowrap;
+    }
+
+    /* 체크 아이콘 크기 축소 */
+    .pill-icon {
+        width: 10px;
+        height: 10px;
+        margin-right: 2px;
+    }
+
+    .column-toggle-pill-input:checked + .column-toggle-pill-content .pill-icon::after {
+        left: 2px;
+        top: 2px;
+        width: 7px;
+        height: 3.5px;
+        border-width: 0 0 1.5px 1.5px;
+    }
+
+    .switch input:checked + .slider::before {
+        transform: translateX(13px);
+    }
+}
+
+
+/* ======================================
+   아주 작은 화면
+====================================== */
+
+@media(max-width:360px) {
+
+    #control-panel {
+        width:260px;
+        min-width:240px;
+        max-width: calc(100vw - 65px);
+    }
+
+    #panel-toggle.open {
+        left: 280px;
+    }
+
+    .route-name-cell {
+        width:var(--route-name-width, 95px);
+        min-width:var(--route-name-width, 95px);
+        white-space:nowrap;
+    }
+
+    .route-variant span:last-child {
+        font-size:11px;
+    }
+}
