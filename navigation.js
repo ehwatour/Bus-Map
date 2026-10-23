@@ -77,38 +77,18 @@
         document.body.appendChild(controls);
     }
 
-    // --------------------------------------------------
-    // 3. 지리 계산 유틸 (두 점 사이 거리 m 계산)
-    // --------------------------------------------------
-    function getDistanceMeters(lat1, lon1, lat2, lon2) {
-        const R = 6371e3;
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180;
-        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                  Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return Math.round(R * c);
-    }
-
-    // --------------------------------------------------
-    // 4. 실시간 네비게이션 & GPS 추적
-    // --------------------------------------------------
     let watchId = null;
     let isTracking = false;
     let userMarker = null;
     let userAccuracyCircle = null;
     let wakeLock = null;
 
-    // 운전 중 화면 꺼짐 방지 요청
     async function requestWakeLock() {
         try {
             if ("wakeLock" in navigator) {
                 wakeLock = await navigator.wakeLock.request("screen");
             }
-        } catch (e) {
-            console.warn("Wake Lock 비활성:", e);
-        }
+        } catch (e) {}
     }
 
     function releaseWakeLock() {
@@ -117,6 +97,7 @@
             wakeLock = null;
         }
     }
+
 
     // 가장 가까운 정류장 찾아 HUD에 업데이트
     function updateNearestStopHUD(userLat, userLng) {
@@ -204,13 +185,15 @@ if (heading !== null && !isNaN(heading)) {
     const markerEl = userMarker.getElement();
     if (markerEl) {
         // 안쪽에 넣어둔 빨간 화살표 엘리먼트만 콕 집어서 회전시킴
-        const arrowEl = markerEl.querySelector(".user-navi-arrow");
-        if (arrowEl) {
-            arrowEl.style.transform = `rotate(${heading}deg)`;
-        }
+if (!userMarker._arrowEl) {
+    userMarker._arrowEl = markerEl.querySelector(".user-navi-arrow");
+}
+if (userMarker._arrowEl) {
+    userMarker._arrowEl.style.transform = `rotate(${heading}deg)`;
+}
     }
 }
-                    map.panTo(latlng, { animate: true, duration: 0.8 });
+                    map.panTo(latlng, { animate: false });
                 }
 
                 // 3. 다음 정류장 거리 갱신
