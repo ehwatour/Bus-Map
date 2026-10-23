@@ -9,7 +9,7 @@
     const CONFIG = {
         PASSWORD: "88",          // ★ 접속 비밀번호 (원하는 번호로 변경)
         AUTH_DAYS: 7,              // 한 번 인증 후 비밀번호 면제 기간 (일)
-        DEFAULT_NAVI_ZOOM: 18      // 네비 시작 시 확대 배율 (16~17 추천)
+        DEFAULT_NAVI_ZOOM: 16      // 네비 시작 시 확대 배율 (16~17 추천)
     };
 
     const AUTH_STORAGE_KEY = "shuttle_bus_auth_timestamp";
