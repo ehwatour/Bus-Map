@@ -190,6 +190,20 @@
     }
 }
 
+/* ＋, － 기호만 큼직하고 두껍게 키우기 */
+#navi-btn-zoom-in,
+#navi-btn-zoom-out {
+    font-size: 30px;
+    font-weight: 500;
+    line-height: 1;
+    padding: 0;          /* 1. 버튼 기본 여백 제거 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-bottom: 7px;
+}
+
+
 /* 모바일 전용 여백 보정 */
 @media (max-width: 600px) {
     #navi-hud-bar {
@@ -209,4 +223,17 @@
         height: 44px;
         font-size: 18px;
     }
+
+#navi-btn-zoom-in,
+#navi-btn-zoom-out {
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 1;
+    padding: 0;          /* 1. 버튼 기본 여백 제거 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-bottom: 0px;
+}
+
 }

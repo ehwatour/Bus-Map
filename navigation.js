@@ -66,15 +66,6 @@
     // 2. 화면 UI 생성 (HUD 바 + 우측 하단 네비 버튼들)
     // --------------------------------------------------
     function createNavigationUI() {
-        // 상단 안내 HUD
-        const hud = document.createElement("div");
-        hud.id = "navi-hud-bar";
-        hud.innerHTML = `
-            <span>📍 다음: <span class="navi-hud-name" id="hud-stop-name">계산 중...</span></span>
-            <span class="navi-hud-dist" id="hud-stop-dist">-- m</span>
-        `;
-        document.body.appendChild(hud);
-
         // 우측 하단 플로팅 버튼들 (GPS, 확대, 축소)
         const controls = document.createElement("div");
         controls.id = "navi-floating-controls";
@@ -161,7 +152,6 @@
         }
 
         const gpsBtn = document.getElementById("navi-btn-gps");
-        const hud = document.getElementById("navi-hud-bar");
 
         watchId = navigator.geolocation.watchPosition(
             (pos) => {
@@ -224,7 +214,7 @@ if (heading !== null && !isNaN(heading)) {
                 }
 
                 // 3. 다음 정류장 거리 갱신
-                updateNearestStopHUD(lat, lng);
+
             },
             (err) => {
                 console.error("GPS 위치 획득 실패:", err);
@@ -240,7 +230,6 @@ if (heading !== null && !isNaN(heading)) {
 
         isTracking = true;
         if (gpsBtn) gpsBtn.classList.add("active");
-        if (hud) hud.style.display = "flex";
         requestWakeLock();
     }
 
@@ -259,9 +248,7 @@ if (heading !== null && !isNaN(heading)) {
         }
 
         const gpsBtn = document.getElementById("navi-btn-gps");
-        const hud = document.getElementById("navi-hud-bar");
         if (gpsBtn) gpsBtn.classList.remove("active");
-        if (hud) hud.style.display = "none";
 
         isTracking = false;
         releaseWakeLock();
