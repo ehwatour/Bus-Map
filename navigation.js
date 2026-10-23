@@ -166,12 +166,7 @@
         watchId = navigator.geolocation.watchPosition(
             (pos) => {
 const heading = pos.coords.heading;
-if (heading !== null && !isNaN(heading)) {
-    const mapContainer = document.getElementById("map");
-    // 지도를 내 진행 방향의 반대 각도로 돌려 12시 방향을 전방으로 고정
-    mapContainer.style.transform = `rotate(${-heading}deg)`;
-    mapContainer.style.transition = "transform 0.4s ease-out";
-}
+
                 const lat = pos.coords.latitude;
                 const lng = pos.coords.longitude;
                 const accuracy = pos.coords.accuracy;
