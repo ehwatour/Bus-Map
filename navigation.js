@@ -144,54 +144,58 @@ function startTracking() {
         is3DMode = true;
         if (map3dEl) map3dEl.style.display = "block";
         if (exitBtn) exitBtn.style.display = "block";
-        if (map3d) map3d.resize();
 
+        // 2. 현재 2D 지도의 중심 좌표를 가져와 0초 만에 3D 지도 즉시 생성
+        const center2D = map.getCenter();
+        if (!map3d) {
+            map3d = new maplibregl.Map({
+                container: 'map-3d',
+                style: 'https://tiles.openfreemap.org/styles/liberty', // 무료 고속 3D 벡터 지도
+                center: [center2D.lng, center2D.lat], // [경도, 위도]
+                zoom: 16,
+                pitch: 50, // 티맵 시점 (50도 눕힘)
+                bearing: 0
+            });
+
+            // 3D 빨간 화살표 마커 생성
+            const arrowDiv = document.createElement("div");
+            arrowDiv.className = "maplibre-navi-arrow";
+            arrowDiv.innerHTML = `
+                <svg viewBox="0 0 24 24" width="32" height="32">
+                    <path d="M12 2 L22 21 L12 17 L2 21 Z" fill="#ff2a2a" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/>
+                </svg>
+            `;
+            marker3d = new maplibregl.Marker({ element: arrowDiv })
+                .setLngLat([center2D.lng, center2D.lat])
+                .addTo(map3d);
+
+            map3d.on('load', () => {
+                map3d.resize();
+                if (typeof routeGeojson !== 'undefined') {
+                    map3d.addSource('bus-routes', { type: 'geojson', data: routeGeojson });
+                    map3d.addLayer({
+                        id: 'bus-routes-line',
+                        type: 'line',
+                        source: 'bus-routes',
+                        paint: {
+                            'line-color': '#1976d2',
+                            'line-width': 6
+                        }
+                    });
+                }
+            });
+        } else {
+            map3d.resize();
+        }
+
+        // 3. 실시간 GPS 수신 시 내 위치로 부드럽게 이동 및 360도 회전
         watchId = navigator.geolocation.watchPosition(
             (pos) => {
                 const heading = pos.coords.heading;
                 const lat = pos.coords.latitude;
                 const lng = pos.coords.longitude;
 
-                // 2. 3D 지도가 아직 없으면 최초 1회 생성 (OpenFreeMap 무료 3D 벡터 연결)
-                if (!map3d) {
-                    map3d = new maplibregl.Map({
-                        container: 'map-3d',
-                        style: 'https://tiles.openfreemap.org/styles/liberty', // 무료 초고속 3D 벡터 지도
-                        center: [lng, lat], // MapLibre는 [경도, 위도] 순서
-                        zoom: 16,
-                        pitch: 50, // ★ 티맵처럼 지도를 50도 앞으로 눕힘!
-                        bearing: (heading !== null && !isNaN(heading)) ? heading : 0
-                    });
-
-                    // 3D 빨간 화살표 마커 생성 (항상 화면 12시 정면을 봄)
-                    const arrowDiv = document.createElement("div");
-                    arrowDiv.className = "maplibre-navi-arrow";
-                    arrowDiv.innerHTML = `
-                        <svg viewBox="0 0 24 24" width="32" height="32">
-                            <path d="M12 2 L22 21 L12 17 L2 21 Z" fill="#ff2a2a" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/>
-                        </svg>
-                    `;
-                    marker3d = new maplibregl.Marker({ element: arrowDiv })
-                        .setLngLat([lng, lat])
-                        .addTo(map3d);
-
-                    // 3D 지도 위에 기존 버스 노선선 그대로 얹기
-                    map3d.on('load', () => {
-                        if (typeof routeGeojson !== 'undefined') {
-                            map3d.addSource('bus-routes', { type: 'geojson', data: routeGeojson });
-                            map3d.addLayer({
-                                id: 'bus-routes-line',
-                                type: 'line',
-                                source: 'bus-routes',
-                                paint: {
-                                    'line-color': '#1976d2',
-                                    'line-width': 6
-                                }
-                            });
-                        }
-                    });
-                } else {
-                    // 3. 주행 중: 카메라를 3D로 실시간 회전시키며 내 차 따라가기 (60fps 무한 회전)
+                if (map3d) {
                     map3d.easeTo({
                         center: [lng, lat],
                         bearing: (heading !== null && !isNaN(heading)) ? heading : map3d.getBearing(),
@@ -199,10 +203,10 @@ function startTracking() {
                         duration: 600,
                         easing: (t) => t
                     });
+                }
 
-                    if (marker3d) {
-                        marker3d.setLngLat([lng, lat]);
-                    }
+                if (marker3d) {
+                    marker3d.setLngLat([lng, lat]);
                 }
             },
             (err) => {
@@ -221,7 +225,6 @@ function startTracking() {
         if (gpsBtn) gpsBtn.classList.add("active");
         requestWakeLock();
     }
-
     function stopTracking() {
         if (watchId !== null) {
             navigator.geolocation.clearWatch(watchId);
