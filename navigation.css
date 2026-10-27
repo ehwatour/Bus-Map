@@ -174,3 +174,47 @@
 }
 
 }
+
+
+/* ======================================
+   3D 네비게이션 전용 스타일
+====================================== */
+/* 평소에는 숨겨져 있다가 네비 켤 때만 전체 화면을 덮음 */
+#map-3d {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9000;
+    display: none;
+}
+
+/* 3D 화면 좌측 상단 [✕ 네비 종료] 버튼 */
+#navi-3d-exit-btn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 10000;
+    background: rgba(33, 37, 41, 0.9);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    padding: 10px 18px;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    display: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
+}
+
+#navi-3d-exit-btn:hover {
+    background: #d32f2f;
+}
+
+/* 3D 화면 전용 빨간 네비 화살표 */
+.maplibre-navi-arrow {
+    width: 32px;
+    height: 32px;
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.5));
+}

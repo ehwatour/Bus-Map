@@ -77,6 +77,10 @@
         document.body.appendChild(controls);
     }
 
+let map3d = null;
+let marker3d = null;
+let is3DMode = false;
+
     let watchId = null;
     let isTracking = false;
     let userMarker = null;
@@ -126,78 +130,80 @@
         }
     }
 
-    function startTracking() {
+function startTracking() {
         if (!navigator.geolocation) {
             alert("이 기기 또는 브라우저는 위치 서비스를 지원하지 않습니다.");
             return;
         }
 
         const gpsBtn = document.getElementById("navi-btn-gps");
+        const map3dEl = document.getElementById("map-3d");
+        const exitBtn = document.getElementById("navi-3d-exit-btn");
+
+        // 1. 3D 네비 화면 활성화
+        is3DMode = true;
+        if (map3dEl) map3dEl.style.display = "block";
+        if (exitBtn) exitBtn.style.display = "block";
+        if (map3d) map3d.resize();
 
         watchId = navigator.geolocation.watchPosition(
             (pos) => {
-const heading = pos.coords.heading;
-
+                const heading = pos.coords.heading;
                 const lat = pos.coords.latitude;
                 const lng = pos.coords.longitude;
-                const accuracy = pos.coords.accuracy;
-                const latlng = [lat, lng];
 
-                // 1. 오차 반경 원 표시
-                if (!userAccuracyCircle) {
-                    userAccuracyCircle = L.circle(latlng, {
-                        radius: accuracy,
-                        color: "#007aff",
-                        fillColor: "#007aff",
-                        fillOpacity: 0.12,
-                        weight: 1
-                    }).addTo(map);
+                // 2. 3D 지도가 아직 없으면 최초 1회 생성 (OpenFreeMap 무료 3D 벡터 연결)
+                if (!map3d) {
+                    map3d = new maplibregl.Map({
+                        container: 'map-3d',
+                        style: 'https://tiles.openfreemap.org/styles/liberty', // 무료 초고속 3D 벡터 지도
+                        center: [lng, lat], // MapLibre는 [경도, 위도] 순서
+                        zoom: 16,
+                        pitch: 50, // ★ 티맵처럼 지도를 50도 앞으로 눕힘!
+                        bearing: (heading !== null && !isNaN(heading)) ? heading : 0
+                    });
+
+                    // 3D 빨간 화살표 마커 생성 (항상 화면 12시 정면을 봄)
+                    const arrowDiv = document.createElement("div");
+                    arrowDiv.className = "maplibre-navi-arrow";
+                    arrowDiv.innerHTML = `
+                        <svg viewBox="0 0 24 24" width="32" height="32">
+                            <path d="M12 2 L22 21 L12 17 L2 21 Z" fill="#ff2a2a" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/>
+                        </svg>
+                    `;
+                    marker3d = new maplibregl.Marker({ element: arrowDiv })
+                        .setLngLat([lng, lat])
+                        .addTo(map3d);
+
+                    // 3D 지도 위에 기존 버스 노선선 그대로 얹기
+                    map3d.on('load', () => {
+                        if (typeof routeGeojson !== 'undefined') {
+                            map3d.addSource('bus-routes', { type: 'geojson', data: routeGeojson });
+                            map3d.addLayer({
+                                id: 'bus-routes-line',
+                                type: 'line',
+                                source: 'bus-routes',
+                                paint: {
+                                    'line-color': '#1976d2',
+                                    'line-width': 6
+                                }
+                            });
+                        }
+                    });
                 } else {
-                    userAccuracyCircle.setLatLng(latlng);
-                    userAccuracyCircle.setRadius(accuracy);
+                    // 3. 주행 중: 카메라를 3D로 실시간 회전시키며 내 차 따라가기 (60fps 무한 회전)
+                    map3d.easeTo({
+                        center: [lng, lat],
+                        bearing: (heading !== null && !isNaN(heading)) ? heading : map3d.getBearing(),
+                        pitch: 50,
+                        duration: 600,
+                        easing: (t) => t
+                    });
+
+                    if (marker3d) {
+                        marker3d.setLngLat([lng, lat]);
+                    }
                 }
-
-                // [수정 후] 빨간 삼각 네비 화살표 아이콘으로 교체
-if (!userMarker) {
-    const naviArrowIcon = L.divIcon({
-        className: "user-navi-marker-container",
-        html: `
-            <div class="user-navi-arrow" style="width:28px; height:28px; transition: transform 0.3s ease;">
-                <svg viewBox="0 0 24 24" width="28" height="28" style="display:block; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));">
-                    <!-- 네비게이션 전용 빨간색 입체 삼각 화살표 -->
-                    <path d="M12 2 L22 21 L12 17 L2 21 Z" fill="#ff2a2a" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/>
-                </svg>
-            </div>
-        `,
-        iconSize: [28, 28],
-        iconAnchor: [14, 14] // 화살표 정중앙을 좌표에 맞춤
-    });
-    userMarker = L.marker(latlng, { icon: naviArrowIcon, zIndexOffset: 3000 }).addTo(map);
-    map.setView(latlng, CONFIG.DEFAULT_NAVI_ZOOM);
-    map.panBy([0, 120]);
-} else {
-                   
-                    userMarker.setLatLng(latlng);
-                    // 네비게이션: 부드럽게 화면을 내 위치로 계속 이동
-
-// [수정 후]
-if (heading !== null && !isNaN(heading)) {
-    const markerEl = userMarker.getElement();
-    if (markerEl) {
-        // 안쪽에 넣어둔 빨간 화살표 엘리먼트만 콕 집어서 회전시킴
-if (!userMarker._arrowEl) {
-    userMarker._arrowEl = markerEl.querySelector(".user-navi-arrow");
-}
-if (userMarker._arrowEl) {
-    userMarker._arrowEl.style.transform = `rotate(${heading}deg)`;
-}
-    }
-}
-                    map.panTo(latlng, { animate: false });
-                }
-
-                // 3. 다음 정류장 거리 갱신
-
             },
             (err) => {
                 console.error("GPS 위치 획득 실패:", err);
@@ -206,7 +212,7 @@ if (userMarker._arrowEl) {
             },
             {
                 enableHighAccuracy: true,
-                maximumAge: 5000,
+                maximumAge: 3000,
                 timeout: 10000
             }
         );
@@ -269,13 +275,25 @@ if (userMarker._arrowEl) {
                 if (typeof map !== "undefined") map.zoomOut();
             };
         }
+        // ★ [이 아래에 3D 종료 이벤트 추가]
+        const exitBtn = document.getElementById("navi-3d-exit-btn");
+        if (exitBtn) {
+            exitBtn.onclick = () => {
+                // 3D 화면을 숨겨서 원래의 2D Leaflet 화면으로 복귀
+                const map3dEl = document.getElementById("map-3d");
+                if (map3dEl) map3dEl.style.display = "none";
+                exitBtn.style.display = "none";
+                is3DMode = false;
+                stopTracking(); // GPS 추적 종료
+            };
+        }
     }
 
     // --------------------------------------------------
     // 초기화 실행
     // --------------------------------------------------
     function init() {
-        //initPasswordSecurity();
+       // initPasswordSecurity();
         createNavigationUI();
         bindNavigationEvents();
     }
