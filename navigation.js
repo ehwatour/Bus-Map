@@ -275,7 +275,7 @@ if (userMarker._arrowEl) {
     // 초기화 실행
     // --------------------------------------------------
     function init() {
-        initPasswordSecurity();
+        //initPasswordSecurity();
         createNavigationUI();
         bindNavigationEvents();
     }
