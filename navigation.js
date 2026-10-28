@@ -247,6 +247,112 @@ map3d.on('load', () => {
             }
         });
     }
+
+    // 1. 🔵 파란색 배경 정류장 (baseStopGeojson)
+    if (typeof baseStopGeojson !== 'undefined') {
+        map3d.addSource('base-stops', { type: 'geojson', data: baseStopGeojson });
+        map3d.addLayer({
+            id: 'base-stops-layer',
+            type: 'circle',
+            source: 'base-stops',
+            minzoom: 15,
+            paint: {
+                'circle-radius': 4,
+                'circle-color': '#2EA1CD',
+                'circle-stroke-width': 1.5,
+                'circle-stroke-color': '#ffffff'
+            }
+        });
+            map3d.addLayer({
+                id: 'base-stops-label',
+                type: 'symbol',
+                source: 'base-stops',
+                minzoom: 16.5, // ★ 가까이 접근(줌 16.5 이상)했을 때만 글씨 표시
+                layout: {
+                    'text-field': ['coalesce', ['get', '정류장명'], ['get', '정류소명'], ''],
+                    'text-font': ['Noto Sans Regular'],
+                    'text-size': 11,
+                    'text-offset': [0, -1.0],
+                    'text-anchor': 'bottom',
+                    'text-allow-overlap': false // 다른 글씨와 부딪히면 자동으로 숨김
+                },
+                paint: {
+                    'text-color': '#1e5f74',
+                    'text-halo-color': '#ffffff',
+                    'text-halo-width': 1.5
+                }
+            });
+    }
+
+    // 2. 🟡 노란색 셔틀 정류장 (stopGeojson)
+    if (typeof stopGeojson !== 'undefined') {
+        map3d.addSource('bus-stops', { type: 'geojson', data: stopGeojson });
+        map3d.addLayer({
+            id: 'bus-stops-layer',
+            type: 'circle',
+            source: 'bus-stops',
+            paint: {
+                'circle-radius': 7,
+                'circle-color': '#FFFF00',
+                'circle-stroke-width': 2.5,
+                'circle-stroke-color': '#000000'
+            }
+        });
+            map3d.addLayer({
+                id: 'bus-stops-label',
+                type: 'symbol',
+                source: 'bus-stops',
+                minzoom: 15, // ★ 가까운 전방에 들어왔을 때부터 표시
+                layout: {
+                    'text-field': ['coalesce', ['get', '정류장명'], ['get', '정류소명'], ''],
+                    'text-font': ['Noto Sans Regular'],
+                    'text-size': 13,
+                    'text-offset': [0, -1.2],
+                    'text-anchor': 'bottom',
+                    'text-allow-overlap': false // 글씨 겹침 방지
+                },
+                paint: {
+                    'text-color': '#000000',
+                    'text-halo-color': '#ffffff',
+                    'text-halo-width': 2
+                }
+            });
+    }
+
+    // 3. 🔴 빨간색 종점 정류장 (endStopGeojson)
+    if (typeof endStopGeojson !== 'undefined') {
+        map3d.addSource('end-stops', { type: 'geojson', data: endStopGeojson });
+        map3d.addLayer({
+            id: 'end-stops-layer',
+            type: 'circle',
+            source: 'end-stops',
+            paint: {
+                'circle-radius': 9,
+                'circle-color': '#FF0000',
+                'circle-stroke-width': 2.5,
+                'circle-stroke-color': '#ffffff'
+            }
+        });
+            map3d.addLayer({
+                id: 'end-stops-label',
+                type: 'symbol',
+                source: 'end-stops',
+                minzoom: 14,
+                layout: {
+                    'text-field': ['coalesce', ['get', '정류장명'], ['get', '정류소명'], ''],
+                    'text-font': ['Noto Sans Regular'],
+                    'text-size': 14,
+                    'text-offset': [0, -1.4],
+                    'text-anchor': 'bottom',
+                    'text-allow-overlap': true // 중요한 종점이므로 겹쳐도 항상 표시
+                },
+                paint: {
+                    'text-color': '#d32f2f',
+                    'text-halo-color': '#ffffff',
+                    'text-halo-width': 2.5
+                }
+            });
+    }
 });
         } else {
             map3d.resize();
