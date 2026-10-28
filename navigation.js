@@ -130,11 +130,45 @@ let is3DMode = false;
         }
     }
 
+// 2D 체크박스에서 켜진(isMapSelected === true) 노선만 추출하는 함수
+function getActiveRouteGeoJSON() {
+    if (typeof routeInfo === "undefined" || typeof routeGeojson === "undefined") {
+        return { type: "FeatureCollection", features: [] };
+    }
+    // 1. 현재 2D에서 체크되어 켜져 있는 노선명(variantName) 목록 수집
+    const activeNames = new Set(
+        routeInfo.filter(info => info.isMapSelected).map(info => info.variantName)
+    );
+    // 2. 켜져 있는 노선에 해당하는 선분(feature)만 필터링
+    const activeFeatures = routeGeojson.features.filter(feat => {
+        const name = feat.properties && feat.properties["노선명"];
+        return activeNames.has(name);
+    });
+    return {
+        type: "FeatureCollection",
+        features: activeFeatures
+    };
+}
+
 function startTracking() {
         if (!navigator.geolocation) {
             alert("이 기기 또는 브라우저는 위치 서비스를 지원하지 않습니다.");
             return;
         }
+
+    // ★ [추가] 2D에서 켜진 노선이 2개 이상인지 확인
+    if (typeof routeInfo !== "undefined") {
+        const activeCount = new Set(
+            routeInfo.filter(info => info.isMapSelected).map(info => info.baseName)
+        ).size;
+
+        if (activeCount >= 2) {
+            const proceed = confirm(`선택된 노선이 ${activeCount}개입니다. 그대로 유지하시겠습니까?`);
+            if (!proceed) {
+                return; // [아니오] 선택 시 3D 화면을 켜지 않고 2D 상태 유지
+            }
+        }
+    }
 
         const gpsBtn = document.getElementById("navi-btn-gps");
         const map3dEl = document.getElementById("map-3d");
@@ -150,10 +184,10 @@ function startTracking() {
         if (!map3d) {
             map3d = new maplibregl.Map({
                 container: 'map-3d',
-                style: 'https://tiles.openfreemap.org/styles/liberty', // 무료 고속 3D 벡터 지도
+                style: 'https://tiles.openfreemap.org/styles/positron', // 무료 고속 3D 벡터 지도
                 center: [center2D.lng, center2D.lat], // [경도, 위도]
-                zoom: 16,
-                pitch: 50, // 티맵 시점 (50도 눕힘)
+                zoom: 17.5,
+                pitch: 60, // 티맵 시점 (50도 눕힘)
                 bearing: 0
             });
 
@@ -169,23 +203,56 @@ function startTracking() {
                 .setLngLat([center2D.lng, center2D.lat])
                 .addTo(map3d);
 
-            map3d.on('load', () => {
-                map3d.resize();
-                if (typeof routeGeojson !== 'undefined') {
-                    map3d.addSource('bus-routes', { type: 'geojson', data: routeGeojson });
-                    map3d.addLayer({
-                        id: 'bus-routes-line',
-                        type: 'line',
-                        source: 'bus-routes',
-                        paint: {
-                            'line-color': '#1976d2',
-                            'line-width': 6
-                        }
-                    });
-                }
-            });
+            // [수정 후] 3D 입체 건물 솟아오름 + 노선에 검은 외곽선 2중 코팅
+map3d.on('load', () => {
+    map3d.resize();
+
+    // 1. 주변 건물들을 3D 블록으로 우뚝 솟아오르게 만듦 (진짜 3D 내비 효과)
+    map3d.addLayer({
+        id: '3d-buildings',
+        source: 'openmaptiles',
+        'source-layer': 'building',
+        type: 'fill-extrusion',
+        minzoom: 15,
+        paint: {
+            'fill-extrusion-color': '#e0e0e0',
+            'fill-extrusion-height': ['get', 'render_height'],
+            'fill-extrusion-base': ['get', 'render_min_height'],
+            'fill-extrusion-opacity': 0.6
+        }
+    });
+
+    // 2. 2D 버스 노선 2중 렌더링 (검은 외곽선 + 선명한 노란색/주황색 라인)
+    if (typeof routeGeojson !== 'undefined') {
+        map3d.addSource('bus-routes', { type: 'geojson', data: getActiveRouteGeoJSON() });
+        
+        // (1) 검은색 굵은 외곽선 바탕
+        map3d.addLayer({
+            id: 'bus-routes-outline',
+            type: 'line',
+            source: 'bus-routes',
+            paint: {
+                'line-color': '#000000',
+                'line-width': 9
+            }
+        });
+        // (2) 그 위에 얹는 밝은 네비 실선
+        map3d.addLayer({
+            id: 'bus-routes-line',
+            type: 'line',
+            source: 'bus-routes',
+            paint: {
+                'line-color': '#ffcc00', // 검은 외곽선 위에서 눈에 확 띄는 노란색
+                'line-width': 5
+            }
+        });
+    }
+});
         } else {
             map3d.resize();
+    if (map3d.getSource('bus-routes')) {
+        map3d.getSource('bus-routes').setData(getActiveRouteGeoJSON());
+    }
         }
 
         // 3. 실시간 GPS 수신 시 내 위치로 부드럽게 이동 및 360도 회전
@@ -199,7 +266,8 @@ function startTracking() {
                     map3d.easeTo({
                         center: [lng, lat],
                         bearing: (heading !== null && !isNaN(heading)) ? heading : map3d.getBearing(),
-                        pitch: 50,
+                        pitch: 60,
+                        offset: [0, 200],
                         duration: 600,
                         easing: (t) => t
                     });
